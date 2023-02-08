@@ -3,7 +3,7 @@
     <input type="text"
       placeholder="I need to ..."
       v-model="newTask">
-    <button>Add task</button>
+    <button>Add</button>
   </form>
 </template>
 

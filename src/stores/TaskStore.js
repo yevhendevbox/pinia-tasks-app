@@ -2,10 +2,8 @@ import { defineStore } from "pinia";
 
 export const useTaskStore = defineStore('taskStore', {
   state: () => ({
-    tasks: [
-      {id: 1, title: "buy some milk", isFav: false},
-      {id: 2, title: "play Gloomhaven", isFav: true},
-    ],
+    tasks: [],
+    loading: false,
   }),
   getters: {
     favs(){
@@ -21,15 +19,49 @@ export const useTaskStore = defineStore('taskStore', {
     }
   },
   actions: {
-    addTask(newTask) {
+    async getInitialTasks() {
+      this.loading = true;
+
+      const req = await fetch('http://localhost:3000/tasks');
+      const data = await req.json();
+
+      this.tasks = data;
+      this.loading = false;
+    },
+    async addTask(newTask) {
       this.tasks.push(newTask);
+
+      const req = await fetch('http://localhost:3000/tasks', {
+        method: 'POST',
+        body: JSON.stringify(newTask),
+        headers: {'Content-type': 'application/json'},
+      });
+      if (req.error) {
+        console.log(req.error);
+      }
     },
-    deleteTask(id) {
+    async deleteTask(id) {
       this.tasks = this.tasks.filter(el => el.id !== id);
+
+      const req = await fetch('http://localhost:3000/tasks/' + id, {
+        method: 'DELETE',
+      });
+      if (req.error) {
+        console.log(req.error);
+      }
     },
-    toggleFav(id) {
+    async toggleFav(id) {
       const taskToToggle = this.tasks.find(el => el.id === id);
       taskToToggle.isFav = !taskToToggle.isFav;
+
+      const req = await fetch('http://localhost:3000/tasks/' + id, {
+        method: 'PATCH',
+        body: JSON.stringify({isFav: taskToToggle.isFav}),
+        headers: {'Content-type': 'application/json'},
+      });
+      if (req.error) {
+        console.log(req.error);
+      }
     },
   },
 });
